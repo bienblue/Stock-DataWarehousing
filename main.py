@@ -4,7 +4,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import load_data
 import plot
-import ANN_model
 #Library
 import pandas as pd
 import numpy as np
@@ -57,7 +56,7 @@ plot.plot_x_y(df['High'], 'High', df['Low'], 'Low')
 
 
 #@st.cache()
-def MODEL_ANN():
+def MODEL_LSTM():
 
 
     scaler = MinMaxScaler()
@@ -136,4 +135,4 @@ def MODEL_ANN():
 
     
 if __name__ == '__main__':
-    MODEL_ANN()
+    MODEL_LSTM()
