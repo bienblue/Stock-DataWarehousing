@@ -1,0 +1,52 @@
+from keras.models import Sequential , load_model
+from keras.layers import LSTM, Dense, Dropout
+import numpy as np
+import pandas as pd
+
+def model_ann(df,X_train,y_train,X_test,y_test,split,scaler):
+
+    model_ANN = Sequential()
+    model_ANN.add(LSTM(units=96, return_sequences=True, input_shape=(X_train.shape[1], 1)))
+    model_ANN.add(Dropout(0.2))
+    model_ANN.add(LSTM(units=96,return_sequences=True))
+    model_ANN.add(Dropout(0.2))
+    model_ANN.add(LSTM(units=96,return_sequences=True))
+    model_ANN.add(Dropout(0.2))
+    model_ANN.add(LSTM(units=96))
+    model_ANN.add(Dropout(0.2))
+    model_ANN.add(Dense(units=1))
+
+    model_ANN.compile(optimizer='adam', loss='mse',metrics=['mae'])
+
+    model_ANN.fit(X_train, y_train, epochs=50, batch_size=32,  verbose=1, validation_split=0.2)
+    model_ANN.save('stock_prediction_ANN.h5')
+
+    model_ANN = load_model('stock_prediction_ANN.h5')
+   
+    
+    ###
+    y_test_scaled_ann = scaler.inverse_transform(y_test.reshape(-1, 1))
+    predictions_ann = model_ANN.predict(X_test)
+    y_predictions_ann = scaler.inverse_transform(predictions_ann.reshape(-1, 1))
+  
+    ##
+    df_ann = pd.DataFrame(df)
+    df_ann = df_ann[split:-15]
+    df_ann['y_test'] = y_test_scaled_ann
+    df_ann['Predict_ann'] = y_predictions_ann
+
+
+    
+    forecast_ann = np.array(df)[-15:]
+
+    forecast_ann = scaler.fit_transform(forecast_ann.reshape(-1,1))
+
+
+    ann_forecast= model_ANN.predict(forecast_ann)
+    ann_forecast = scaler.inverse_transform(ann_forecast.reshape(-1,1))
+
+
+    df_forecast_ann = pd.DataFrame(df[-15:])
+    df_forecast_ann['Fore_15_next_ann'] = ann_forecast
+    return df_ann,df_forecast_ann
+   

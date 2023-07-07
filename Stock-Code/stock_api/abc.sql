@@ -1,0 +1,8 @@
+select 
+	f.*,
+	d0.DateKey dim_time_trade_DateKey, d0.FullDate dim_time_trade_FullDate, d0.Year dim_time_trade_Year, d0.Quarter dim_time_trade_Quarter, d0.Month dim_time_trade_Month, d0.Day dim_time_trade_Day,
+	d1.organCode dim_company_organCode, d1.ticker dim_company_ticker, d1.comGroupCode dim_company_comGroupCode, d1.icbCode dim_company_icbCode, d1.organTypeCode dim_company_organTypeCode, d1.comTypeCode dim_company_comTypeCode, d1.organName dim_company_organName, d1.organShortName dim_company_organShortName, d1.exchange dim_company_exchange, d1.shortName dim_company_shortName, d1.industryID dim_company_industryID, d1.industryIDv2 dim_company_industryIDv2, d1.industry dim_company_industry, d1.industryEn dim_company_industryEn, d1.establishedYear dim_company_establishedYear, d1.noEmployees dim_company_noEmployees, d1.noShareholders dim_company_noShareholders, d1.foreignPercent dim_company_foreignPercent, d1.website dim_company_website, d1.stockRating dim_company_stockRating, d1.deltaInWeek dim_company_deltaInWeek, d1.deltaInMonth dim_company_deltaInMonth, d1.deltaInYear dim_company_deltaInYear, d1.outstandingShare dim_company_outstandingShare, d1.issueShare dim_company_issueShare, d1.companyType dim_company_companyType, d1.status dim_company_status, d1.code dim_company_code, d1.message dim_company_message, d1.traceId dim_company_traceId
+from
+	fact_trade_history f
+	left join dim_time_trade d0 ON f.DateKey = d0.DateKey
+	left join dim_company d1 ON f.ticker = d1.ticker
