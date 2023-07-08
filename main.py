@@ -50,7 +50,7 @@ st.dataframe(df)
 # # chart
 
 plot.plot_x_y(df['Open'], 'Open', df['Close'], 'Close')
-plot.plot_x_y(df['High'], 'High', df['Low'], 'Low')
+#plot.plot_x_y(df['High'], 'High', df['Low'], 'Low')
 
 
 #@st.cache()
@@ -105,9 +105,22 @@ def MODEL_LSTM():
 
     # Calculate the root mean squared error (RMSE)
     rmse = np.sqrt(np.mean((predictions[:,3] - y_test[:,3])**2))
-    print(f'RMSE: {rmse}')
-
     st.write('RMSE: ', rmse)
+
+    # Đánh giá MAPE trên tập kiểm tra
+    mape = np.mean(np.abs((y_test[:,3] - predictions[:,3]) / y_test[:,3])) * 100
+    st.write("Mean Absolute Percentage Error (MAPE):", mape)
+
+
+    mae = np.mean(np.abs(predictions[:,3] - y_test[:,3]))
+    st.write("Mean Absolute Error (MAE):", mae)
+
+    ss_res = np.sum(np.square(predictions[:,3] - y_test[:,3]))
+    ss_total = np.sum(np.square(y_test[:,3] - np.mean(y_test[:,3])))
+    r2 = 1 - (ss_res / ss_total)
+    st.write("R-squared Score (R²):", r2)
+
+
 
     df_final=pd.DataFrame(df)
     df_final = df_final[-len(y_test):]
@@ -116,11 +129,6 @@ def MODEL_LSTM():
 
     plot.plot_x_y(df_final['Actual Price'],'Actual Price',df_final['Predicted Price'],'Predicted Price')
 
-    calculate_ann = load_data.calculate(df_final['Actual Price'],df_final['Predicted Price'])
-    mape_ann,RegScoreFun,meanAbsoluteError_ann,RMSE_ann = calculate_ann[0],calculate_ann[1],calculate_ann[2],calculate_ann[3]
-    ### MAE:lỗi tuyệt đối đề cập đến mức độ khác biệt giữa dự đoán của một quan sát và giá trị thực sự của quan sát đó
-    st.write('RegScoreFun r2_score- độ phù hợp:',RegScoreFun)
-    st.write('MAPE-sai số tương đối trung bình:',mape_ann)
 
     y_testtest = scaler.inverse_transform(y)
     df_train=pd.DataFrame(df)
