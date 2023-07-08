@@ -121,8 +121,6 @@ def MODEL_LSTM():
     ### MAE:lỗi tuyệt đối đề cập đến mức độ khác biệt giữa dự đoán của một quan sát và giá trị thực sự của quan sát đó
     st.write('RegScoreFun r2_score- độ phù hợp:',RegScoreFun)
     st.write('MAPE-sai số tương đối trung bình:',mape_ann)
-    st.write('meanAbsoluteError-MAE_sai số tuyệt đối trung bình:',meanAbsoluteError_ann)
-    st.write('RMSE mean_squared_error-căn bậc 2 của sai số bình phương trung bình:',RMSE_ann)
 
     y_testtest = scaler.inverse_transform(y)
     df_train=pd.DataFrame(df)
