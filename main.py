@@ -104,7 +104,7 @@ def MODEL_LSTM():
     y_test = scaler.inverse_transform(y_test)
 
     # Calculate the root mean squared error (RMSE)
-    rmse = np.sqrt(np.mean((predictions - y_test)**2))
+    rmse = np.sqrt(np.mean((predictions[:,3] - y_test[:,3])**2))
     print(f'RMSE: {rmse}')
 
     st.write('RMSE: ', rmse)
