@@ -38,21 +38,6 @@ def ticker_overview (symbol):
 
 ## STOCK TRADING HISTORICAL DATA
 def stock_historical_data (symbol, start_date, end_date):
-    """
-    This function returns the stock historical daily data.
-    Args:
-        symbol (:obj:`str`, required): 3 digits name of the desired stock.
-        start_date (:obj:`str`, required): the start date to get data (YYYY-mm-dd).
-        end_date (:obj:`str`, required): the end date to get data (YYYY-mm-dd).
-    Returns:
-        :obj:`pandas.DataFrame`:
-        | tradingDate | open | high | low | close | volume |
-        | ----------- | ---- | ---- | --- | ----- | ------ |
-        | YYYY-mm-dd  | xxxx | xxxx | xxx | xxxxx | xxxxxx |
-
-    Raises:
-        ValueError: raised whenever any of the introduced arguments is not valid.
-    """ 
     fd = int(time.mktime(time.strptime(start_date, "%Y-%m-%d")))
     td = int(time.mktime(time.strptime(end_date, "%Y-%m-%d")))
     data = requests.get('https://apipubaws.tcbs.com.vn/stock-insight/v1/stock/bars-long-term?ticker={}&type=stock&resolution=D&from={}&to={}'.format(symbol, fd, td)).json()
@@ -73,48 +58,14 @@ def today():
     return today
 
 def last_xd (day_num): # return the date of last x days
-    """
-    This function returns the date that X days ago from today in the format of YYYY-MM-DD.
-    Args:
-        day_num (:obj:`int`, required): numer of days.
-    Returns:
-        :obj:`str`:
-            2022-02-22
-    Raises:
-        ValueError: raised whenever any of the introduced arguments is not valid.
-    """  
     last_xd = (today_val - timedelta(day_num)).strftime('%Y-%m-%d')
     return last_xd
 
 def start_xm (period): # return the start date of x months
-    """
-    This function returns the start date of X months ago from today in the format of YYYY-MM-DD.
-    Args:
-        period (:obj:`int`, required): numer of months (period).
-    Returns:
-        :obj:`str`:
-            2022-01-01
-    Raises:
-        ValueError: raised whenever any of the introduced arguments is not valid.
-    """ 
     date = pd.date_range(end=today, periods=period+1, freq='MS')[0].strftime('%Y-%m-%d')
     return date
 
 def stock_intraday_data (symbol, page_num, page_size):
-    """
-    This function returns the stock realtime intraday data.
-    Args:
-        symbol (:obj:`str`, required): 3 digits name of the desired stock.
-        page_size (:obj:`int`, required): the number of rows in a page to be returned by this query, suggest to use 5000.
-        page_num (:obj:`str`, required): the page index starting from 0.
-    Returns:
-        :obj:`pandas.DataFrame`:
-        | tradingDate | open | high | low | close | volume |
-        | ----------- | ---- | ---- | --- | ----- | ------ |
-        | YYYY-mm-dd  | xxxx | xxxx | xxx | xxxxx | xxxxxx |
-    Raises:
-        ValueError: raised whenever any of the introduced arguments is not valid.
-    """
     d = datetime.now()
     if d.weekday() > 4: #today is weekend
         data = requests.get('https://apipubaws.tcbs.com.vn/stock-insight/v1/intraday/{}/his/paging?page={}&size={}&headIndex=-1'.format(symbol, page_num, page_size)).json()
@@ -125,11 +76,6 @@ def stock_intraday_data (symbol, page_num, page_size):
 
 # COMPANY OVERVIEW
 def company_overview (symbol):
-    """
-    This function returns the company overview of a target stock symbol
-    Args:
-        symbol (:obj:`str`, required): 3 digits name of the desired stock.
-    """
     data = requests.get('https://apipubaws.tcbs.com.vn/tcanalysis/v1/ticker/{}/overview'.format(symbol)).json()
     df = json_normalize(data)
     return df
@@ -137,26 +83,12 @@ def company_overview (symbol):
 
 # FINANCIAL REPORT
 def financial_report (symbol, report_type, frequency, headers=headers): # Quarterly, Yearly
-    """
-    This function returns the balance sheet of a stock symbol by a Quarterly or Yearly range.
-    Args:
-        symbol (:obj:`str`, required): 3 digits name of the desired stock.
-        report_type (:obj:`str`, required): BalanceSheet, IncomeStatement, CashFlow
-        report_range (:obj:`str`, required): Yearly or Quarterly.
-    """
     url = 'https://fiin-fundamental.ssi.com.vn/FinancialStatement/Download{}?language=vi&OrganCode={}&Skip=0&Frequency={}'.format(report_type, symbol, frequency)
     r = requests.get(url, headers=headers)
     df = pd.read_excel(BytesIO(r.content), skiprows=7).dropna()
     return df
 
 def financial_ratio_compare (symbol_ls, industry_comparison, frequency, start_year, headers=headers): 
-    """
-    This function returns the balance sheet of a stock symbol by a Quarterly or Yearly range.
-    Args:
-        symbol (:obj:`str`, required): ["CTG", "TCB", "ACB"].
-        industry_comparison (:obj: `str`, required): "true" or "false"
-        report_range (:obj:`str`, required): Yearly or Quarterly.
-    """
     global timeline
     if frequency == 'Yearly':
       timeline = str(start_year) + '_5'
@@ -178,13 +110,6 @@ def financial_ratio_compare (symbol_ls, industry_comparison, frequency, start_ye
 # STOCK FILTERING
 
 def financial_ratio (symbol, report_range, is_all): #TCBS source
-    """
-    This function returns the quarterly financial ratios of a stock symbol. Some of expected ratios are: priceToEarning, priceToBook, roe, roa, bookValuePerShare, etc
-    Args:
-        symbol (:obj:`str`, required): 3 digits name of the desired stock.
-        report_range (:obj:`str`, required): 'yearly' or 'quarterly'.
-        is_all (:obj:`boo`, required): True or False
-    """
     if report_range == 'yearly':
         x = 1
     elif report_range == 'quarterly':
@@ -200,13 +125,6 @@ def financial_ratio (symbol, report_range, is_all): #TCBS source
     return df
 
 def financial_flow(symbol, report_type, report_range): # incomestatement, balancesheet, cashflow | report_range: 0 for quarterly, 1 for yearly
-    """
-    This function returns the quarterly financial ratios of a stock symbol. Some of expected ratios are: priceToEarning, priceToBook, roe, roa, bookValuePerShare, etc
-    Args:
-        symbol (:obj:`str`, required): 3 digits name of the desired stock.
-        report_type (:obj:`str`, required): select one of 3 reports: incomestatement, balancesheet, cashflow.
-        report_range (:obj:`str`, required): yearly or quarterly.
-    """
     if report_range == 'yearly':
         x = 1
     elif report_range == 'quarterly':
@@ -283,11 +201,6 @@ def valuation_rating (symbol):
 
 
 def industry_financial_health (symbol):
-    """
-    This function returns the industry financial health rating for the seed stock symbol.
-    Args:
-        symbol (:obj:`str`, required): 3 digits name of the desired stock.
-    """
     data = requests.get('https://apipubaws.tcbs.com.vn/tcanalysis/v1/rating/{}/financial-health?fType=INDUSTRY'.format(symbol)).json()
     df = json_normalize(data)
     return df
@@ -295,11 +208,6 @@ def industry_financial_health (symbol):
 ## STOCK COMPARISON
 
 def industry_analysis (symbol):
-    """
-    This function returns an overview of rating for companies at the same industry with the desired stock symbol.
-    Args:
-        symbol (:obj:`str`, required): 3 digits name of the desired stock.
-    """
     data = requests.get('https://apipubaws.tcbs.com.vn/tcanalysis/v1/rating/detail/council?tickers={}&fType=INDUSTRIES'.format(symbol)).json()
     df = json_normalize(data)
     data1 = requests.get('https://apipubaws.tcbs.com.vn/tcanalysis/v1/rating/detail/single?ticker={}&fType=TICKER'.format(symbol)).json()
@@ -308,11 +216,6 @@ def industry_analysis (symbol):
     return df
 
 def stock_ls_analysis (symbol_ls):
-    """
-    This function returns an overview of rating for a list of companies by entering list of stock symbols.
-    Args:
-        symbol (:obj:`str`, required): 3 digits name of the desired stock.
-    """
     data = requests.get('https://apipubaws.tcbs.com.vn/tcanalysis/v1/rating/detail/council?tickers={}&fType=TICKERS'.format(symbol_ls)).json()
     df = json_normalize(data).dropna(axis=1)
     return df
@@ -320,11 +223,6 @@ def stock_ls_analysis (symbol_ls):
 ## MARKET WATCH
 
 def market_top_mover (report_name): #Value, Losers, Gainers, Volume, ForeignTrading, NewLow, Breakout, NewHigh
-    """
-    This function returns the list of Top Stocks by one of criteria: 'Value', 'Losers', 'Gainers', 'Volume', 'ForeignTrading', 'NewLow', 'Breakout', 'NewHigh'.
-    Args:
-        report_name(:obj:`str`, required): name of the report
-    """
     ls1 = ['Gainers', 'Losers', 'Value', 'Volume']
     # ls2 = ['ForeignTrading', 'NewLow', 'Breakout', 'NewHigh']
     if report_name in ls1:
@@ -343,12 +241,6 @@ def market_top_mover (report_name): #Value, Losers, Gainers, Volume, ForeignTrad
 
 
 def fr_trade_heatmap (exchange, report_type): 
-    """
-    This function returns the foreign investors trading insights which is being rendered as the heatmap on SSI iBoard
-    Args:
-        exchange (:obj:`str`, required): Choose All, HOSE, HNX, or UPCOM.
-        report_type (:obj:`str`, required): choose one of these report types: FrBuyVal, FrSellVal, FrBuyVol, FrSellVol, Volume, Value, MarketCap
-    """
     url = 'https://fiin-market.ssi.com.vn/HeatMap/GetHeatMap?language=vi&Exchange={}&Criteria={}'.format(exchange, report_type)
     r = api_request(url)
     concat_ls = []
@@ -366,15 +258,6 @@ def fr_trade_heatmap (exchange, report_type):
 # GET MARKET IN DEPT DATA - INDEX SERIES
 
 def get_index_series(index_code='VNINDEX', time_range='OneYear', headers=headers):
-    """
-    Retrieve the Stock market index series, maximum in 5 years
-    Args:
-        index_code (:obj:`str`, required): Use one of the following code'VNINDEX', 'VN30', 'HNXIndex', 'HNX30', 'UpcomIndex', 'VNXALL',
-                                        'VN100','VNALL', 'VNCOND', 'VNCONS','VNDIAMOND', 'VNENE', 'VNFIN',
-                                        'VNFINLEAD', 'VNFINSELECT', 'VNHEAL', 'VNIND', 'VNIT', 'VNMAT', 'VNMID',
-                                        'VNREAL', 'VNSI', 'VNSML', 'VNUTI', 'VNX50'. You can get the complete list of the latest indices from `get_latest_indices()` function
-        time_range (:obj: `str`, required): Use one of the following values 'OneDay', 'OneWeek', 'OneMonth', 'ThreeMonth', 'SixMonths', 'YearToDate', 'OneYear', 'ThreeYears', 'FiveYears'
-    """
     url = f"https://fiin-market.ssi.com.vn/MarketInDepth/GetIndexSeries?language=vi&ComGroupCode={index_code}&TimeRange={time_range}&id=1"
     payload={}
     response = requests.request("GET", url, headers=headers, data=payload)

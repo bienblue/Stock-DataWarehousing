@@ -5,10 +5,12 @@ from sklearn.preprocessing import MinMaxScaler
 import load_data
 import plot
 #Library
+import os
 import pandas as pd
 import numpy as np
 from sklearn.metrics import r2_score
 import streamlit as st
+import os
 
 from keras.models import Sequential , load_model
 from keras.layers import LSTM, Dense, Dropout
@@ -17,11 +19,10 @@ from keras.layers import LSTM, Dense, Dropout
 st.title('Stock Prediction App')
 # Data URL
 dataset = ( 'CTG_Trade',
-           'ACB_Trade',
            'EIB_Trade',
            'MBB_Trade', 
-           'NVB_Trade',
-           'STB_Trade')
+           'STB_Trade',
+           'ACB_Trade')
 option = st.selectbox('Select dataset for prediction', dataset)
 DATA_URL = ('data/'+option+'.csv')
 ####
@@ -54,7 +55,7 @@ plot.plot_x_y(df['Open'], 'Open', df['Close'], 'Close')
 
 
 #@st.cache()
-def MODEL_LSTM():
+def MODEL_LSTM(rebuild = False):
 
 
     scaler = MinMaxScaler()
@@ -78,17 +79,20 @@ def MODEL_LSTM():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, shuffle=False)
 
+    model = None
+    _path_model = f'models/{option}.h5'
+    if not os.path.exists(_path_model) or rebuild:
+        model = Sequential()
+        model.add(LSTM(units=50, activation='relu', return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])))
+        model.add(LSTM(units=50, activation='relu'))
+        model.add(Dense(units=y_train.shape[1]))
 
-    model = Sequential()
-    model.add(LSTM(units=50, activation='relu', return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])))
-    model.add(LSTM(units=50, activation='relu'))
-    model.add(Dense(units=y_train.shape[1]))
+        model.compile(optimizer='adam', loss='mse')
 
-    model.compile(optimizer='adam', loss='mse')
-
-    model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
-    model.save('modeltrained.h5')
-    #model = load_model('modeltrained.h5')
+        model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
+        model.save(_path_model)
+    else:
+        model = load_model(_path_model)
 
     # Evaluate the model on the test set
     loss = model.evaluate(X_test, y_test)
@@ -139,4 +143,9 @@ def MODEL_LSTM():
 
     
 if __name__ == '__main__':
-    MODEL_LSTM()
+    _option = st.selectbox("Retrain model:", ['No', 'Yes'])
+    if _option == 'Yes':
+        MODEL_LSTM(True)
+    else:
+        MODEL_LSTM()
+    #os.remove("modeltrained.h5")
