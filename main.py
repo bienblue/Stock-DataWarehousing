@@ -80,17 +80,23 @@ def MODEL_LSTM(rebuild = False):
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, shuffle=False)
 
     model = None
-    _path_model = f'models/{option}.h5'
+    _path_model = None
+    if uploaded_file is not None:
+        _path_model = f'models/{uploaded_file.name.split(".")[0]}.h5'
+    else:
+        _path_model = f'models/{option}.h5'
     if not os.path.exists(_path_model) or rebuild:
-        model = Sequential()
-        model.add(LSTM(units=50, activation='relu', return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])))
-        model.add(LSTM(units=50, activation='relu'))
-        model.add(Dense(units=y_train.shape[1]))
+        if _path_model != None:
+            
+            model = Sequential()
+            model.add(LSTM(units=50, activation='relu', return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])))
+            model.add(LSTM(units=50, activation='relu'))
+            model.add(Dense(units=y_train.shape[1]))
 
-        model.compile(optimizer='adam', loss='mse')
+            model.compile(optimizer='adam', loss='mse')
 
-        model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
-        model.save(_path_model)
+            model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
+            model.save(_path_model)
     else:
         model = load_model(_path_model)
 
