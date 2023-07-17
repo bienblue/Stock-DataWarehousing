@@ -146,7 +146,29 @@ def MODEL_LSTM(rebuild = False):
     df_train['Train'] = y_testtest[:-len(y_test),3]
     plot.plot_x_y_z(df_train['Train'],'Train',df_final['Actual Price'],'Actual Price',df_final['Predicted Price'],'Predicted Price')
 
+    X_future = np.array([data_scaled[-30:]])
+    feature_predict = []
+    N_days = 20
+    for i in range(0, N_days):
+        _future_predict = model.predict(np.array([X_future[-1]]))
+        #_future_predict = model.predict(X_future)[-1]
+        feature_predict.append(_future_predict[0])
+        _next_x = X_future[-1, -29:]
+        _next_x = np.expand_dims(np.vstack((_next_x, _future_predict)), axis=0)
+        X_future = np.vstack((X_future, _next_x))
+    
+    last_date = df_final.index[-1]
+    new_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=N_days, freq='D')
+    feature_df = pd.DataFrame(index=new_dates)
+    df_final = pd.concat([df_final, feature_df])
+    feature_predict = scaler.inverse_transform(feature_predict)
+    last_N_days_index = df_final.index[-N_days:]
+    df_final.loc[last_N_days_index, 'Future Price'] = feature_predict[:,3]
 
+
+    plot.plot_x_y_z(df_final['Actual Price'],'Actual Price',df_final['Predicted Price'],'Predicted Price', df_final['Future Price'],'Future Price')
+
+    
     
 if __name__ == '__main__':
     _option = st.selectbox("Retrain model:", ['No', 'Yes'])
